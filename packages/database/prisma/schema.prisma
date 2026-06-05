@@ -1,0 +1,257 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  BUYER
+  ADMIN
+}
+
+enum ApartmentStatus {
+  DRAFT
+  ACTIVE
+  SOLD
+  ARCHIVED
+}
+
+enum InquiryType {
+  VISIT
+  CONTACT
+  WHATSAPP
+}
+
+enum InquiryStatus {
+  NEW
+  CONTACTED
+  SCHEDULED
+  COMPLETED
+  CLOSED
+}
+
+enum ValuationStatus {
+  NEW
+  REVIEWING
+  EVALUATED
+  ACQUIRED
+  DECLINED
+  CLOSED
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  phone         String?
+  passwordHash  String?
+  name          String
+  role          UserRole @default(BUYER)
+  emailVerified Boolean  @default(false)
+  phoneVerified Boolean  @default(false)
+  otpCode       String?
+  otpExpiresAt  DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  savedApartments SavedApartment[]
+  visitRequests   VisitRequest[]
+  inquiries       Inquiry[]
+}
+
+model Location {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  city      String   @default("Dhaka")
+  latitude  Float?
+  longitude Float?
+  featured  Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  apartments Apartment[]
+}
+
+model Apartment {
+  id              String          @id @default(cuid())
+  slug            String          @unique
+  title           String
+  description     String          @db.Text
+  price           Int
+  area            String
+  locationId      String
+  location        Location        @relation(fields: [locationId], references: [id])
+  address         String
+  latitude        Float
+  longitude       Float
+  bedrooms        Int
+  bathrooms       Int
+  sizeSqft        Int
+  floor           Int
+  totalFloors     Int?
+  buildingAge     Int?
+  parking         Boolean         @default(false)
+  furnished       Boolean         @default(false)
+  lift            Boolean         @default(true)
+  ownershipType   String?
+  verified        Boolean         @default(true)
+  featured        Boolean         @default(false)
+  status          ApartmentStatus @default(DRAFT)
+  viewCount       Int             @default(0)
+  buildingName    String?
+  buildingInfo    String?         @db.Text
+  floorDetails    String?         @db.Text
+  ownershipDetails String?        @db.Text
+  nearbyLandmarks Json?
+  metaTitle       String?
+  metaDescription String?
+  publishedAt     DateTime?
+  soldAt          DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  images          ApartmentImage[]
+  features        ApartmentFeature[]
+  savedBy         SavedApartment[]
+  visitRequests   VisitRequest[]
+  inquiries       Inquiry[]
+  analytics       ApartmentAnalytics[]
+}
+
+model ApartmentImage {
+  id          String    @id @default(cuid())
+  apartmentId String
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  url         String
+  alt         String?
+  sortOrder   Int       @default(0)
+  isPrimary   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+}
+
+model ApartmentFeature {
+  id          String    @id @default(cuid())
+  apartmentId String
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  name        String
+  category    String    @default("general")
+}
+
+model SavedApartment {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apartmentId String
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, apartmentId])
+}
+
+model VisitRequest {
+  id          String        @id @default(cuid())
+  apartmentId String
+  apartment   Apartment     @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?         @relation(fields: [userId], references: [id])
+  name        String
+  phone       String
+  email       String?
+  preferredDate DateTime?
+  message     String?       @db.Text
+  status      InquiryStatus @default(NEW)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Inquiry {
+  id          String        @id @default(cuid())
+  apartmentId String?
+  apartment   Apartment?    @relation(fields: [apartmentId], references: [id])
+  userId      String?
+  user        User?         @relation(fields: [userId], references: [id])
+  type        InquiryType   @default(CONTACT)
+  name        String
+  phone       String
+  email       String?
+  message     String?       @db.Text
+  status      InquiryStatus @default(NEW)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model ValuationRequest {
+  id              String          @id @default(cuid())
+  ownerName       String
+  phone           String
+  email           String?
+  location        String
+  area            String?
+  sizeSqft        Int?
+  bedrooms        Int?
+  bathrooms       Int?
+  floor           Int?
+  buildingAge     Int?
+  parking         Boolean         @default(false)
+  furnished       Boolean         @default(false)
+  askingPrice     Int?
+  additionalNotes String?         @db.Text
+  imageUrls       String[]
+  status          ValuationStatus @default(NEW)
+  adminNotes      String?         @db.Text
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model HomepageSection {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  title     String
+  subtitle  String?
+  content   Json?
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  role      String?
+  content   String   @db.Text
+  rating    Int      @default(5)
+  avatarUrl String?
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Faq {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String   @db.Text
+  active    Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model ApartmentAnalytics {
+  id          String    @id @default(cuid())
+  apartmentId String
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+  event       String
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+
+  @@index([apartmentId, event])
+  @@index([createdAt])
+}
+
+model SiteSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value Json
+}
