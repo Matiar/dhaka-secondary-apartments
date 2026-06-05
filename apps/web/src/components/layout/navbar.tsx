@@ -10,8 +10,8 @@ import { cn, SITE_CONFIG } from '@/lib/utils';
 
 const navLinks = [
   { href: '/apartments', label: 'Collection' },
-  { href: '/about', label: 'About' },
   { href: '/sell', label: 'Sell Your Apartment' },
+  { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
 ];
 
