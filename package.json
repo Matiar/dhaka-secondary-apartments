@@ -2,21 +2,17 @@
   "name": "dhaka-secondary-apartments",
   "private": true,
   "workspaces": [
-    "apps/*",
+    "apps/web",
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
-    "dev:web": "npm run dev --workspace=apps/web",
-    "dev:api": "npm run start:dev --workspace=apps/api",
-    "build": "npm run build --workspace=apps/web && npm run build --workspace=apps/api",
+    "dev": "npm run dev --workspace=apps/web",
+    "build": "npm run build --workspace=apps/web",
+    "start": "npm run start --workspace=apps/web",
     "db:generate": "npm run generate --workspace=packages/database",
     "db:push": "npm run push --workspace=packages/database",
     "db:seed": "npm run seed --workspace=packages/database",
     "db:studio": "npm run studio --workspace=packages/database"
-  },
-  "devDependencies": {
-    "concurrently": "^9.1.2"
   },
   "overrides": {
     "prisma": "6.19.3",

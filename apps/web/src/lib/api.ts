@@ -7,11 +7,17 @@ import {
   type Faq,
 } from './mock-data';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+function getApiBaseUrl() {
+  if (typeof window !== 'undefined') return '/api';
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+  return `${siteUrl}/api`;
+}
 
 async function fetchApi<T>(path: string, options?: RequestInit): Promise<T | null> {
   try {
-    const res = await fetch(`${API_URL}${path}`, {
+    const res = await fetch(`${getApiBaseUrl()}${path}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
@@ -109,7 +115,7 @@ export async function getRecentApartments() {
 }
 
 export async function getApartmentBySlug(slug: string) {
-  const result = await fetchApi<Apartment>(`/apartments/${slug}`);
+  const result = await fetchApi<Apartment>(`/apartments/by-slug/${slug}`);
   if (result) return result;
 
   const apt = MOCK_APARTMENTS.find((a) => a.slug === slug);
@@ -148,7 +154,7 @@ export async function submitVisitRequest(
   apartmentId: string,
   data: { name: string; phone: string; email?: string; message?: string; preferredDate?: string }
 ) {
-  const result = await fetch(`${API_URL}/apartments/${apartmentId}/visit`, {
+  const result = await fetch(`${getApiBaseUrl()}/apartments/${apartmentId}/visit`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -162,7 +168,7 @@ export async function submitContact(data: {
   email?: string;
   message?: string;
 }) {
-  const result = await fetch(`${API_URL}/inquiries/contact`, {
+  const result = await fetch(`${getApiBaseUrl()}/inquiries/contact`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -171,7 +177,7 @@ export async function submitContact(data: {
 }
 
 export async function submitValuation(data: Record<string, unknown>) {
-  const result = await fetch(`${API_URL}/valuations`, {
+  const result = await fetch(`${getApiBaseUrl()}/valuations`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -180,7 +186,7 @@ export async function submitValuation(data: Record<string, unknown>) {
 }
 
 export async function login(email: string, password: string) {
-  const res = await fetch(`${API_URL}/auth/login`, {
+  const res = await fetch(`${getApiBaseUrl()}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -190,7 +196,7 @@ export async function login(email: string, password: string) {
 }
 
 export async function register(data: { email: string; name: string; password: string; phone?: string }) {
-  const res = await fetch(`${API_URL}/auth/register`, {
+  const res = await fetch(`${getApiBaseUrl()}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
@@ -200,7 +206,7 @@ export async function register(data: { email: string; name: string; password: st
 }
 
 export async function getAdminDashboard(token: string) {
-  const res = await fetch(`${API_URL}/admin/dashboard`, {
+  const res = await fetch(`${getApiBaseUrl()}/admin/dashboard`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) return null;

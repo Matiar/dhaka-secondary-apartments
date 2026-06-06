@@ -2,35 +2,26 @@
 
 A premium curated resale apartment platform for Dhaka, Bangladesh. Unlike traditional property marketplaces, Alcove operates as an acquisition and resale business — every apartment is personally verified, acquired, and managed by the internal team.
 
-## Business Model
-
-- **NOT** an open listing platform
-- No seller dashboard, agent portal, or public listing submission
-- Company acquires apartments from owners via valuation requests
-- Admin team publishes curated inventory (15–20 active apartments)
-- Buyers browse and submit visit/contact requests
-
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Next.js 16, TypeScript, Tailwind CSS, ShadCN-style UI, Framer Motion |
-| Backend | NestJS, REST API, Swagger docs |
+| App | Next.js 16 (App Router + API Routes) |
+| UI | TypeScript, Tailwind CSS, Framer Motion |
 | Database | PostgreSQL, Prisma ORM |
+| Auth | JWT (jose) |
 | Maps | OpenStreetMap + Leaflet |
-| Storage | AWS S3 compatible |
-| Deployment | Vercel-ready (frontend) |
+| Deployment | Vercel |
 
 ## Project Structure
 
 ```
-├── apps/
-│   ├── web/          # Next.js frontend (public site + admin UI)
-│   └── api/          # NestJS REST API
-├── packages/
-│   └── database/     # Prisma schema, migrations, seed
-└── .env.example      # Environment variables template
+├── apps/web/           # Unified Next.js app (frontend + API)
+├── packages/database/  # Prisma schema, migrations, seed
+└── .env.example
 ```
+
+The API runs as Next.js Route Handlers under `/api/*` — no separate backend server needed.
 
 ## Getting Started
 
@@ -42,24 +33,18 @@ A premium curated resale apartment platform for Dhaka, Bangladesh. Unlike tradit
 ### Setup
 
 ```bash
-# Install dependencies
 npm install
-
-# Copy environment variables
 cp .env.example .env
+# Set DATABASE_URL in .env
 
-# Configure DATABASE_URL in .env, then:
 npm run db:generate
 npm run db:push
 npm run db:seed
 
-# Start development servers
 npm run dev
 ```
 
-- **Frontend**: http://localhost:3000
-- **API**: http://localhost:4000/api
-- **API Docs**: http://localhost:4000/api/docs
+Open **http://localhost:3000**
 
 ### Demo Credentials
 
@@ -68,39 +53,23 @@ npm run dev
 | Admin | admin@alcove.bd | admin123 |
 | Buyer | buyer@example.com | buyer123 |
 
-## Pages
+## Deploy to Vercel
 
-- `/` — Premium homepage with hero, featured apartments, testimonials, FAQ
-- `/apartments` — Curated collection with simple filters
-- `/apartments/[slug]` — Premium apartment detail with gallery, map, inquiry sidebar
-- `/about` — Company story and business model
-- `/sell` — Multi-step valuation request form
-- `/contact` — Contact form and information
-- `/login` — Buyer/admin authentication
-- `/account` — Buyer saved apartments and profile
-- `/admin` — Internal admin dashboard
+1. Import the repository on [Vercel](https://vercel.com)
+2. Set **Root Directory** to `apps/web`
+3. Add environment variables from `.env.example` (especially `DATABASE_URL` and `JWT_SECRET`)
+4. Deploy
+
+Vercel will run `npm install` from the monorepo root and build the Next.js app with integrated API routes.
 
 ## API Endpoints
 
-- `POST /api/auth/register` — Buyer registration
-- `POST /api/auth/login` — Email/password login
-- `POST /api/auth/otp/request` — Mobile OTP request
-- `GET /api/apartments` — List with filters (area, budget, bedrooms, size)
-- `GET /api/apartments/:slug` — Apartment detail
-- `POST /api/apartments/:id/visit` — Schedule visit request
-- `POST /api/valuations` — Submit valuation request
-- `POST /api/inquiries/contact` — General contact inquiry
-- `GET /api/admin/dashboard` — Admin analytics (auth required)
+All endpoints are served from the same origin at `/api/`:
 
-## Deployment
-
-### Frontend (Vercel)
-
-Deploy `apps/web` with environment variables from `.env.example`.
-
-### API
-
-Deploy NestJS API to any Node.js host. Set `DATABASE_URL`, `JWT_SECRET`, and S3 credentials.
+- `POST /api/auth/register` · `POST /api/auth/login`
+- `GET /api/apartments` · `GET /api/apartments/by-slug/[slug]`
+- `POST /api/apartments/[id]/visit` · `POST /api/valuations`
+- `POST /api/inquiries/contact` · `GET /api/admin/dashboard`
 
 ## License
 
